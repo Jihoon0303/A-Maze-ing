@@ -100,14 +100,13 @@ def print_maze(maze: Maze) -> None:
 
 
 if __name__ == "__main__":
-    # Create a 3x3 maze.
-    maze = Maze(10, 10)
+    for i in range(5):
+        print(f"\n========== MAZE {i + 1} ==========\n")
 
-    # Create the maze generator.
-    generator = MazeGenerator(maze)
+        maze = Maze(10, 10)
 
-    # Generate the maze.
-    generator.generate()
+        generator = MazeGenerator(maze)
+        generator.generate()
 
-    # Print the generated maze.
-    print_maze(maze)
+        print_maze(maze)
+
