@@ -54,6 +54,11 @@ def parse_raw_config(path: str) -> dict[str, str]:
                         )
     except FileNotFoundError:
         raise ConfigError("Config file not found") from None
+    except OSError as e:
+        raise ConfigError(f"Cannot read config file '{path}': {e}")
+    except ValueError as er:
+        raise ConfigError(f"Invalid config file: {er}")
+
     return config_dict
 
 
