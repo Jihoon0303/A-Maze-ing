@@ -37,7 +37,6 @@ def maze_to_hex(maze: Maze) -> list[str]:
     return hex_maze
 
 
-# sulution: str IS PLACEHOLDER FOR THE ACTUAL SOLVED PATH
 def write_output(file_path: str, maze: Maze, entry: tuple[int, int],
                  exit_point: tuple[int, int], solution: str) -> None:
     """writes output hex to file"""
