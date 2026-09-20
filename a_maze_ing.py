@@ -1,5 +1,7 @@
 import sys
 from config import ConfigError, parse_config
+from output import OutputError, write_output
+from mazegen.maze_generator import MazeGenerator
 
 
 def main() -> None:
@@ -12,7 +14,12 @@ def main() -> None:
     except ConfigError as e:
         print(f"Error: {e}")
         sys.exit(1)
-    print(config) # replace later with:
+    # placeholders:
+    try:
+        maze = Maze()
+        write_output("output_maze.txt")
+    
+    # replace later with:
     # Build a Maze from config.width/config.height
     # generate it with the seed, entry/exit and perfect flag
     # solve the maze with shortest path
