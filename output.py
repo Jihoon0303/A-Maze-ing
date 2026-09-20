@@ -37,6 +37,11 @@ def maze_to_hex(maze: Maze) -> list[str]:
     return hex_maze
 
 
+def path_to_directions(path: list[Cell]) -> str:
+    """Formatting path to directional string NSWE"""
+    ...  # next step
+
+
 def write_output(file_path: str, maze: Maze, entry: tuple[int, int],
                  exit_point: tuple[int, int], solution: str) -> None:
     """writes output hex to file"""

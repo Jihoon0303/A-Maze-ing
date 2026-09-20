@@ -6,7 +6,7 @@ from mazegen.maze import Maze
 
 
 def main() -> None:
-    """ 
+    """
     Creates config instance and catches Usage errors
     Generates maze and creates hex output file from it
     """
