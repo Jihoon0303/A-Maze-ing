@@ -1,8 +1,9 @@
 import sys
 from config import ConfigError, parse_config
-from output import OutputError, write_output
+from output import OutputError, write_output, path_to_directions
 from mazegen.maze_generator import MazeGenerator
 from mazegen.maze import Maze
+from mazegen.maze_solver import MazeSolver
 
 
 def main() -> None:
@@ -20,21 +21,16 @@ def main() -> None:
         sys.exit(1)
     # placeholders:
     maze = Maze(config.width, config.height)
-    generator = MazeGenerator(maze)
-    generator.generate()
+    MazeGenerator(maze).generate()
+    path = MazeSolver(maze).solve()
+    solution = path_to_directions(path)
     try:
         write_output(config.output_file, maze, config.entry,
-                     config.exit, "")  # "" is placeholder for solved path
+                     config.exit, solution)
     except OutputError as e:
         print(f"Error: {e}")
         sys.exit(1)
-
-    # replace later with:
-    # Build a Maze from config.width/config.height
-    # generate it with the seed, entry/exit and perfect flag
-    # solve the maze with shortest path
-    # Write output file
-    # run display loop
+    # TODO: entry/exit is still hardcoded in mazegen!
 
 
 if __name__ == "__main__":
