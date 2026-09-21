@@ -9,6 +9,17 @@ WEST = 8
 # _____________________________________________________________________________
 
 
+# Directions dict to translate Cell movement into directions:
+# _____________________________________________________________________________
+DIRECTIONS = {
+    (0, -1): "N",
+    (1, 0): "E",
+    (0, 1): "S",
+    (-1, 0): "W"
+}
+# _____________________________________________________________________________
+
+
 class OutputError(Exception):
     """ Raised when output file can't be generated """
     ...
@@ -39,7 +50,12 @@ def maze_to_hex(maze: Maze) -> list[str]:
 
 def path_to_directions(path: list[Cell]) -> str:
     """Formatting path to directional string NSWE"""
-    ...  # next step
+    letters = []
+    for current, following in zip(path, path[1:]):
+        dx = following.x - current.x
+        dy = following.y - current.y
+        letters.append(DIRECTIONS[(dx, dy)])
+    return "".join(letters)
 
 
 def write_output(file_path: str, maze: Maze, entry: tuple[int, int],
