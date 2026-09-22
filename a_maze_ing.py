@@ -21,8 +21,8 @@ def main() -> None:
         sys.exit(1)
     # placeholders:
     maze = Maze(config.width, config.height)
-    MazeGenerator(maze).generate()
-    path = MazeSolver(maze).solve()
+    MazeGenerator(maze, config.entry, config.exit).generate()
+    path = MazeSolver(maze, config.entry, config.exit).solve()
     solution = path_to_directions(path)
     try:
         write_output(config.output_file, maze, config.entry,
@@ -30,7 +30,7 @@ def main() -> None:
     except OutputError as e:
         print(f"Error: {e}")
         sys.exit(1)
-    # TODO: entry/exit is still hardcoded in mazegen!
+
 
 
 if __name__ == "__main__":

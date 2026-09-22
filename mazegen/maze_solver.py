@@ -6,14 +6,16 @@ from .maze import Maze, Cell
 class MazeSolver:
     """Solve a maze using the BFS algorithm."""
 
-    def __init__(self, maze: Maze):
+    def __init__(self, maze: Maze, entry:tuple[int,int], exit_point:tuple[int, int]):
         self.maze = maze
+        self.entry = entry
+        self.exit_point = exit_point
 
     def solve(self) -> list[Cell]:
         """Find a path from the start to the end."""
 
-        start = self.maze.cells[0][0]
-        end = self.maze.cells[-1][-1]
+        start = self.maze.cells[self.entry[1]][self.entry[0]]
+        end = self.maze.cells[self.exit_point[1]][self.exit_point[0]]
 
         queue = deque([start])
         visited = {start}
@@ -89,24 +91,28 @@ class MazeSolver:
         return path
 
 
-# Temporary test code
 if __name__ == "__main__":
     from .maze_generator import MazeGenerator
 
-    # Create a 10x10 maze.
     maze = Maze(10, 10)
 
-    # Generate the maze.
-    generator = MazeGenerator(maze)
+    entry = (0, 0)
+    exit_point = (9, 9)
+
+    generator = MazeGenerator(maze, entry)
     generator.generate()
 
-    # Solve the maze using BFS.
-    solver = MazeSolver(maze)
+    # Entry = (0, 0)
+    # Exit = (9, 9)
+    solver = MazeSolver(
+        maze,
+        entry=(0, 0),
+        exit_point=(9, 9)
+    )
+
     path = solver.solve()
 
-    # Print the path length.
     print("Path length:", len(path))
 
-    # Print every cell in the path.
     for cell in path:
         print(f"({cell.x}, {cell.y})")
