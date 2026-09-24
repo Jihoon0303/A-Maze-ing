@@ -77,9 +77,9 @@ def main() -> None:
         elif choice == "4":
             break
         else:
-            print("\nInvalid choice.")
+            print("\nInvalid choice!")
             try:
-                input("Press Enter and try again with (1-4)")
+                input("\nPress Enter and try again with (1-4)")
             except EOFError:
                 break
 
