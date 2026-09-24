@@ -10,6 +10,12 @@ CONFIGS_NEEDED = [
     "PERFECT",
 ]
 
+OPTIONAL_CONFIGS = [
+    "SEED",
+]
+
+ALLOWED_CONFIGS = CONFIGS_NEEDED + OPTIONAL_CONFIGS
+
 
 @dataclass
 class Config:
@@ -33,7 +39,7 @@ def parse_raw_config(path: str) -> dict[str, str]:
     """
     Opens the config file to:
     - Skip blank lines / comments
-    - Reject invalid lines and raise ConfigError
+    - Reject invalid lines, unknown and duplicate keys (ConfigError)
     Returns config_dict containig all needed config data
     """
     config_dict: dict[str, str] = {}
@@ -47,6 +53,12 @@ def parse_raw_config(path: str) -> dict[str, str]:
                     k_raw, v_raw = line.split("=", maxsplit=1)
                     k = k_raw.strip()
                     v = v_raw.strip()
+                    if k not in ALLOWED_CONFIGS:
+                        raise ConfigError(f"Unknown config key: '{k}'")
+                    if k in config_dict:
+                        raise ConfigError(f"Duplicate config key: '{k}'")
+                    if not v:
+                        raise ConfigError(f"Empty value for config key: '{k}'")
                     config_dict[k] = v
                 else:
                     raise ConfigError(
@@ -113,9 +125,13 @@ def validate_config(config_dict: dict[str, str]) -> Config:
     exit_point = parse_coords(config_dict["EXIT"], width, height, "EXIT")
     if entry == exit_point:
         raise ConfigError("ENTRY and EXIT must be different")
-    perfect_mode = False
-    if config_dict["PERFECT"].lower() == "true":
-        perfect_mode = True
+    perfect_raw = config_dict["PERFECT"].lower()
+    if perfect_raw not in ("true", "false"):
+        raise ConfigError(
+            f"Invalid PERFECT value: '{config_dict['PERFECT']}' "
+            "must be True or False"
+            )
+    perfect_mode = perfect_raw == "true"
     if "SEED" in config_dict:
         try:
             seed = int(config_dict["SEED"])

@@ -31,18 +31,18 @@ def main() -> None:
     """Parse config, then run the interactive maze display loop."""
     if len(sys.argv) != 2:
         print(f"Usage: python3 {sys.argv[0]} <config_file>")
-        sys.exit(1)
+        return
     try:
         config = parse_config(sys.argv[1])
     except ConfigError as e:
         print(f"Error: {e}")
-        sys.exit(1)
+        return
 
     try:
         maze, path = generate_and_write(config)
     except OutputError as e:
         print(f"Error: {e}")
-        sys.exit(1)
+        return
 
     colors = WALL_CYCLE_COLORS
     color_index = 0
@@ -69,7 +69,7 @@ def main() -> None:
                 maze, path = generate_and_write(config)
             except OutputError as e:
                 print(f"Error: {e}")
-                sys.exit(1)
+                return
         elif choice == "2":
             show_path = not show_path
         elif choice == "3":
