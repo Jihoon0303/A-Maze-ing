@@ -18,7 +18,7 @@ WALL_CYCLE_COLORS = [
 def generate_and_write(config: Config) -> tuple[Maze, list[Cell]]:
     """Generate a maze, solve it, and write the output file."""
     maze = Maze(config.width, config.height)
-    MazeGenerator(maze, config.entry, config.exit).generate()
+    MazeGenerator(maze, config.entry, config.exit, config.perfect).generate()
     path = MazeSolver(maze, config.entry, config.exit).solve()
     solution = path_to_directions(path)
     write_output(

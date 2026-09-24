@@ -20,6 +20,9 @@ class Cell:
         # It tells us whether this cell has already been visited.
         self.visited = False
 
+        # True when this cell belongs to the 42 pattern.
+        # These cells must never be opened by the maze generator.
+        self.is_pattern = False
 
 class Maze:
     """Represent the complete maze and manage its cells."""
