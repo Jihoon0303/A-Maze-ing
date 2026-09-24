@@ -24,3 +24,9 @@ lint:
 lint-strict:
 		flake8 .
 		mypy . --strict
+
+build:
+		python3 -m build
+		mv dist/* .
+		rmdir dist
+		rm -rf mazegen.egg-info

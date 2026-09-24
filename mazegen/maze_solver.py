@@ -6,7 +6,8 @@ from .maze import Maze, Cell
 class MazeSolver:
     """Solve a maze using the BFS algorithm."""
 
-    def __init__(self, maze: Maze, entry:tuple[int,int], exit_point:tuple[int, int]):
+    def __init__(self, maze: Maze, entry: tuple[int, int],
+                 exit_point: tuple[int, int]):
         self.maze = maze
         self.entry = entry
         self.exit_point = exit_point
@@ -89,30 +90,3 @@ class MazeSolver:
         path.reverse()
 
         return path
-
-
-if __name__ == "__main__":
-    from .maze_generator import MazeGenerator
-
-    maze = Maze(10, 10)
-
-    entry = (0, 0)
-    exit_point = (9, 9)
-
-    generator = MazeGenerator(maze, entry)
-    generator.generate()
-
-    # Entry = (0, 0)
-    # Exit = (9, 9)
-    solver = MazeSolver(
-        maze,
-        entry=(0, 0),
-        exit_point=(9, 9)
-    )
-
-    path = solver.solve()
-
-    print("Path length:", len(path))
-
-    for cell in path:
-        print(f"({cell.x}, {cell.y})")
