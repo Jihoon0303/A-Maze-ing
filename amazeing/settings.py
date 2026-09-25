@@ -45,6 +45,8 @@ EXIT: Color = (255, 80, 90)
 # ---------------------------------------------------------------------------
 FLOOR_FALLBACK: Color = (34, 32, 44)     # if the floor texture is missing
 WALL_FALLBACK: Color = (58, 54, 70)      # if the wall texture is missing
+WALL_LIGHT: Color = (140, 138, 160)      # bevel highlight edge on walls
+WALL_DARK: Color = (10, 9, 16)           # bevel shadow edge on walls
 ICHOR_TINT: Color = (120, 255, 90)       # necrotic virus glow
 ICHOR_EDGE: Color = (200, 255, 140)      # freshly infected frontier
 EYE_GLOW: Color = (255, 40, 40)          # ghoul eyes in the dark

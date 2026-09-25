@@ -1,6 +1,5 @@
 """Play mode: guide the archer out of a dark maze before the virus wins."""
 
-import random
 from collections.abc import Callable
 
 import pygame
@@ -12,21 +11,22 @@ from mazegen.solvers import BFSSolver
 from ..app import App, Scene
 from ..settings import (ACCENT, BG, COORD_BG, ENTRY, EXIT, EXIT_GLOW,
                         EYE_GLOW, FLOOR_FALLBACK, ICHOR_EDGE, ICHOR_TINT,
-                        PANEL_BG, TEXT, TEXT_DIM, WALL_FALLBACK)
+                        PANEL_BG, TEXT, TEXT_DIM, WALL_DARK, WALL_FALLBACK,
+                        WALL_LIGHT)
 from ..sprites import ArcherSprites, GhoulSprites, load_fireball, load_texture
 from ..ui import draw_text
 from .arrow import Arrow
 from .enemy import Ghoul
-from .lighting import (ARROW_CELLS, ENEMY_REVEAL, TORCH_CELLS, Lighting,
-                       flood_visible)
+from .lighting import ARROW_CELLS, TORCH_CELLS, Lighting, flood_visible
 from .player import Player
 from .virus import ARM_DELAY, VIRUS_ALGOS, VIRUS_LABELS, Virus
 from .world import CELL, Camera, cell_center, cell_of
 
 # Fixed play maze (kept constant so the sprites always fit their cells).
 MAZE_W, MAZE_H = 19, 13
-ENEMIES_ON_PATH = 3
-ENEMIES_OFF_PATH = 4
+# Ghouls sit only on the solution path, spread out as guide-markers:
+# clearing one confirms you are on the right route to the exit.
+PATH_GHOULS = 6
 WALL_THICK = 12
 
 # Movement keys -> direction name.
@@ -87,37 +87,33 @@ class PlayScene(Scene):
         self.enemies_cleared = 0
 
     def _place_enemies(self) -> list[Ghoul]:
-        """Put ghouls on the solution path and scattered off it."""
+        """Put the ghouls on the solution path, evenly spaced as markers.
+
+        Every ghoul stands on the shortest route to the exit, so clearing
+        one tells the player "this is the right way". They are spread out
+        along the route and kept clear of the entry and exit cells.
+        """
         path = [cell_of(c) for c in
                 BFSSolver(self.maze, self.entry, self.exit).solve()]
         inner = path[2:-2]              # keep clear of entry/exit
-        chosen: set[tuple[int, int]] = set()
-
-        # Spread the on-path ghouls out along the route.
-        if inner:
-            for i in range(ENEMIES_ON_PATH):
-                spot = (i + 1) * len(inner) // (ENEMIES_ON_PATH + 1)
-                chosen.add(inner[spot])
-
-        # Fill the rest from random walkable, non-logo, non-path cells.
-        pool = [
-            (x, y)
-            for y in range(self.maze.height)
-            for x in range(self.maze.width)
-            if not self.maze.cells[y][x].is_pattern
-            and (x, y) not in (self.entry, self.exit)
-            and (x, y) not in path
-        ]
-        random.shuffle(pool)
-        for cell in pool:
-            if len(chosen) >= ENEMIES_ON_PATH + ENEMIES_OFF_PATH:
-                break
-            chosen.add(cell)
-
+        if not inner:
+            return []
+        chosen: list[tuple[int, int]] = []
+        for i in range(PATH_GHOULS):
+            spot = (i + 1) * len(inner) // (PATH_GHOULS + 1)
+            cell = inner[spot]
+            if cell not in chosen:
+                chosen.append(cell)
         return [Ghoul(self.ghoul_sprites, c) for c in chosen]
 
     def _build_wall_strips(self) -> None:
-        """Pre-scale horizontal/vertical wall strips from the texture."""
+        """Pre-scale the wall strips and give them a bevel for visibility.
+
+        Each strip gets a light edge on one long side and a dark edge on
+        the other, so a wall reads as a raised block against the similar-
+        coloured floor. Only the long edges are drawn (not the ends), so
+        adjoining strips still form one continuous, unbroken wall line.
+        """
         h_size = (CELL + WALL_THICK, WALL_THICK)
         v_size = (WALL_THICK, CELL + WALL_THICK)
         if self.wall_tex is not None:
@@ -128,6 +124,15 @@ class PlayScene(Scene):
             self.wall_h.fill(WALL_FALLBACK)
             self.wall_v = pygame.Surface(v_size)
             self.wall_v.fill(WALL_FALLBACK)
+
+        hw, hh = h_size
+        vw, vh = v_size
+        # Horizontal strip: light top edge, dark bottom edge.
+        pygame.draw.line(self.wall_h, WALL_LIGHT, (0, 0), (hw, 0))
+        pygame.draw.line(self.wall_h, WALL_DARK, (0, hh - 1), (hw, hh - 1))
+        # Vertical strip: light left edge, dark right edge.
+        pygame.draw.line(self.wall_v, WALL_LIGHT, (0, 0), (0, vh))
+        pygame.draw.line(self.wall_v, WALL_DARK, (vw - 1, 0), (vw - 1, vh))
 
     # ------------------------------------------------------------------
     # Queries used by entities
@@ -377,10 +382,15 @@ class PlayScene(Scene):
             surface.blit(orb, orb.get_rect(center=center))
 
     def _draw_eyes(self, surface) -> None:
-        """Red eye dots for ghouls lurking in the dark within reveal range."""
-        reveal = flood_visible(self.maze, self.player.cell, ENEMY_REVEAL)
+        """Red eye dots so every dark ghoul blinks its position.
+
+        Distance no longer matters: each ghoul's eyes flash on their
+        timer wherever they are, acting as far-off guide-beacons along
+        the solution path. Only a ghoul already lit by the torch is
+        skipped (its body is drawn instead).
+        """
         for ghoul in self.enemies:
-            if ghoul.cell in self.torch or ghoul.cell not in reveal:
+            if ghoul.cell in self.torch:
                 continue
             if not ghoul.eyes_lit(self.time):
                 continue

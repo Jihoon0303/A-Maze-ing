@@ -78,6 +78,13 @@ class Player:
         self._steer(desired, maze)
         self._advance(dt, maze)
 
+        # If we're standing still but a direction is held, still turn to
+        # face it. This lets the archer aim at a wall or a blocking ghoul
+        # directly ahead (to scout with an arrow, or to clear the ghoul),
+        # even though that cell can't be walked into.
+        if not self.moving and desired is not None:
+            self.facing = desired
+
     def _can_enter(self, maze: Maze, cx: int, cy: int, d: str) -> bool:
         """Wall between (cx,cy)->neighbour is open AND no ghoul blocks it."""
         if not wall_open(maze, cx, cy, d):

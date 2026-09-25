@@ -21,9 +21,11 @@ from mazegen.maze import Maze
 from .world import CELL, DIRS, Camera, wall_open
 
 # Radii, in cells, of the flood used for each light kind.
-TORCH_CELLS = 3       # the fireball's light around the archer
+# TORCH_CELLS is the archer's visibility knob: raise it to see farther,
+# lower it to see less. Together with the glow radius below it was cut by
+# roughly half from its original reach (3 cells) to dim the play field.
+TORCH_CELLS = 2       # the fireball's light around the archer
 ARROW_CELLS = 2       # the fire arrow's scouting light
-ENEMY_REVEAL = 5      # how close before a ghoul is drawn / eyes flicker
 
 # How dark things are. 255 = pitch black.
 DARK = 250
@@ -77,7 +79,7 @@ class Lighting:
     def __init__(self) -> None:
         # One glow sprite per torch distance (0..TORCH_CELLS): the
         # farther a cell is from the source, the dimmer its glow.
-        radius = int(CELL * 1.35)
+        radius = int(CELL * 1.1)
         self._torch = [
             _make_glow(radius, int(255 * (1 - 0.72 * d / TORCH_CELLS)))
             for d in range(TORCH_CELLS + 1)

@@ -1,6 +1,11 @@
 {
   "size": 116,
   "note": "West mirrored from East. Eye-flicker done in code.",
+  "idle": {
+    "south": 4,
+    "east": 4,
+    "north": 4
+  },
   "death": {
     "south": 7,
     "east": 7,

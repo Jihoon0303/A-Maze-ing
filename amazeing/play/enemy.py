@@ -8,6 +8,7 @@ from ..sprites import GhoulSprites
 from .world import CELL, cell_center
 
 DEATH_FRAME_TIME = 0.11    # seconds per death frame
+IDLE_FRAME_TIME = 0.16     # seconds per breathing-idle frame
 EYE_PERIOD = 3.0           # seconds between eye flickers
 EYE_FLASH = 0.5            # how long the eyes stay lit each flicker
 
@@ -29,6 +30,7 @@ class Ghoul:
         self.facing = "south"
         self.state = "alive"       # alive -> dying -> gone
         self._death_time = 0.0
+        self._idle_time = 0.0
         self._bob = math.tau * (cell[0] * 0.5 + cell[1] * 0.3)  # phase
 
     @property
@@ -61,7 +63,10 @@ class Ghoul:
         return True
 
     def update(self, dt: float) -> None:
-        """Advance the death animation, if dying."""
+        """Advance the breathing idle, or the death animation if dying."""
+        if self.state == "alive":
+            self._idle_time += dt
+            return
         if self.state != "dying":
             return
         self._death_time += dt
@@ -87,12 +92,13 @@ class Ghoul:
                 pygame.Vector2(cx + gap, cy - up)]
 
     def current_frame(self) -> pygame.Surface:
-        """Sprite for this frame: a bobbing idle pose, or death frames."""
+        """Sprite for this frame: the breathing idle, or death frames."""
         if self.state == "dying" and self.sprites.death:
             index = min(int(self._death_time / DEATH_FRAME_TIME),
                         self.sprites.death.length - 1)
             return self.sprites.death.frame(self.facing, index)
-        return self.sprites.idle(self.facing)
+        step = int(self._idle_time / IDLE_FRAME_TIME)
+        return self.sprites.idle(self.facing, step % self.sprites.idle_length)
 
     def draw_offset(self, time_now: float) -> float:
         """A gentle vertical bob (pixels) for the idle pose."""

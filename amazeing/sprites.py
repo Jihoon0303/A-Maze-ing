@@ -103,38 +103,53 @@ class ArcherSprites:
 
 
 class GhoulSprites:
-    """The Vampire Ghoul: static facing poses plus a death animation.
+    """The Vampire Ghoul: a breathing idle plus a death animation.
 
-    The ghoul never walks in Play mode (it is a stationary blocker), so
-    its eight rotation images double as single-frame idle poses; only the
-    death animation needs real frames. West is mirrored from East.
+    The ghoul never walks in Play mode (it is a stationary blocker). It
+    has a real breathing-idle loop; if those frames are absent it falls
+    back to the static rotation poses. West is mirrored from East.
     """
 
     def __init__(self, size: int) -> None:
         root = os.path.join(ASSETS, "ghoul")
-        self.idle_frames: dict[str, pygame.Surface] = {}
+
+        # Static rotation poses (the idle fallback).
+        self._rotations: dict[str, pygame.Surface] = {}
         rot_dir = os.path.join(root, "rotations")
         if os.path.isdir(rot_dir):
             for facing in (NORTH, EAST, SOUTH, WEST):
                 path = os.path.join(rot_dir, f"{facing}.png")
                 if os.path.exists(path):
-                    self.idle_frames[facing] = pygame.transform.scale(
+                    self._rotations[facing] = pygame.transform.scale(
                         _load_png(path), (size, size))
 
-        per_dir = {}
-        death_dir = os.path.join(root, "death")
-        if os.path.isdir(death_dir):
-            for facing in os.listdir(death_dir):
-                frames = _load_frames(os.path.join(death_dir, facing))
-                if frames:
-                    per_dir[facing] = _scale(frames, size)
-        self.death = DirectionalAnim(per_dir) if per_dir else None
+        self.idle_anim = self._load_anim(os.path.join(root, "idle"), size)
+        self.death = self._load_anim(os.path.join(root, "death"), size)
 
-    def idle(self, direction: str) -> pygame.Surface:
-        """The standing pose for a facing (falls back to south)."""
-        return (self.idle_frames.get(direction)
-                or self.idle_frames.get(SOUTH)
-                or next(iter(self.idle_frames.values())))
+    @staticmethod
+    def _load_anim(folder: str, size: int) -> "DirectionalAnim | None":
+        """Load a per-direction animation from ``folder`` (or None)."""
+        if not os.path.isdir(folder):
+            return None
+        per_dir = {}
+        for facing in os.listdir(folder):
+            frames = _load_frames(os.path.join(folder, facing))
+            if frames:
+                per_dir[facing] = _scale(frames, size)
+        return DirectionalAnim(per_dir) if per_dir else None
+
+    def idle(self, direction: str, index: int = 0) -> pygame.Surface:
+        """The idle frame for a facing: animated if available, else static."""
+        if self.idle_anim is not None:
+            return self.idle_anim.frame(direction, index)
+        return (self._rotations.get(direction)
+                or self._rotations.get(SOUTH)
+                or next(iter(self._rotations.values())))
+
+    @property
+    def idle_length(self) -> int:
+        """Number of frames in the idle loop (1 if only static poses)."""
+        return self.idle_anim.length if self.idle_anim else 1
 
 
 def load_texture(name: str, size: int) -> pygame.Surface | None:
