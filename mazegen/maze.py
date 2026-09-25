@@ -1,10 +1,13 @@
+"""Core maze data structures: a single Cell and the Maze grid."""
+
+
 class Cell:
     """Represent one cell (one square) of the maze."""
 
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int) -> None:
         # Store the cell's position inside the maze.
         # x = horizontal position (column)
-        # y = vertical position (row)
+        # y = vertical position (row), growing downwards
         self.x = x
         self.y = y
 
@@ -24,10 +27,25 @@ class Cell:
         # These cells must never be opened by the maze generator.
         self.is_pattern = False
 
+
+# Two neighbouring cells share one wall, but each cell stores its own copy
+# of it. This table says which attribute of each cell is that shared wall,
+# keyed by the step (dx, dy) from the first cell to the second.
+#
+# Example: the second cell is directly to the right (dx=1, dy=0), so the
+# shared wall is the first cell's "right" and the second cell's "left".
+_SHARED_SIDES = {
+    (1, 0): ("right", "left"),
+    (-1, 0): ("left", "right"),
+    (0, 1): ("bottom", "top"),
+    (0, -1): ("top", "bottom"),
+}
+
+
 class Maze:
     """Represent the complete maze and manage its cells."""
 
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int) -> None:
         # Store the dimensions of the maze.
         self.width = width
         self.height = height
@@ -78,38 +96,43 @@ class Maze:
 
     def remove_wall(self, cell1: Cell, cell2: Cell) -> None:
         """Remove the wall shared by two neighboring cells."""
+        self._set_shared_wall(cell1, cell2, closed=False)
 
-        # Calculate the position difference between the two cells.
-        #
-        # Example:
-        # cell1 = (1, 1)
-        # cell2 = (2, 1)
-        #
-        # dx = 1
-        # dy = 0
-        dx = cell2.x - cell1.x
-        dy = cell2.y - cell1.y
+    def add_wall(self, cell1: Cell, cell2: Cell) -> None:
+        """Put back the wall shared by two neighboring cells."""
+        self._set_shared_wall(cell1, cell2, closed=True)
 
-        # cell2 is directly to the right of cell1.
-        if dx == 1 and dy == 0:
-            cell1.right = False
-            cell2.left = False
+    def is_connected(self, cell1: Cell, cell2: Cell) -> bool:
+        """Return True if you can walk directly from cell1 to cell2.
 
-        # cell2 is directly to the left of cell1.
-        elif dx == -1 and dy == 0:
-            cell1.left = False
-            cell2.right = False
+        Both copies of a shared wall always agree, so reading the side of
+        cell1 is enough.
+        """
+        side1, _ = self._shared_sides(cell1, cell2)
+        return not getattr(cell1, side1)
 
-        # cell2 is directly below cell1.
-        elif dx == 0 and dy == 1:
-            cell1.bottom = False
-            cell2.top = False
+    def _set_shared_wall(
+        self, cell1: Cell, cell2: Cell, closed: bool
+    ) -> None:
+        """Open or close the wall between two cells, on both sides.
 
-        # cell2 is directly above cell1.
-        elif dx == 0 and dy == -1:
-            cell1.top = False
-            cell2.bottom = False
+        Updating both copies at once is what keeps the maze coherent: a
+        cell can never have a closed east wall while its neighbour's west
+        wall is open.
+        """
+        side1, side2 = self._shared_sides(cell1, cell2)
+        # setattr(obj, "right", value) is the same as obj.right = value,
+        # but lets us pick the attribute name at runtime.
+        setattr(cell1, side1, closed)
+        setattr(cell2, side2, closed)
 
-        # The two cells are not directly next to each other.
-        else:
+    @staticmethod
+    def _shared_sides(cell1: Cell, cell2: Cell) -> tuple[str, str]:
+        """Return the wall attribute names that two neighbours share.
+
+        Raises ValueError if the cells are not direct neighbours.
+        """
+        step = (cell2.x - cell1.x, cell2.y - cell1.y)
+        if step not in _SHARED_SIDES:
             raise ValueError("Cells must be direct neighbors.")
+        return _SHARED_SIDES[step]

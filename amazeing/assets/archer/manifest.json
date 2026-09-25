@@ -1,0 +1,30 @@
+{
+  "size": 76,
+  "directions_generated": {},
+  "animations": {
+    "walk": {
+      "north": 6,
+      "east": 6,
+      "south": 6
+    },
+    "idle": {
+      "north": 4,
+      "east": 4,
+      "south": 4
+    },
+    "shoot": {
+      "north": 7,
+      "east": 7,
+      "south": 7
+    },
+    "death": {
+      "north": 7,
+      "south": 7,
+      "east": 7
+    },
+    "projectile": {
+      "east": 5
+    }
+  },
+  "note": "West is mirrored from East at load time. Projectile is the East fire-arrow, rotated per direction."
+}
