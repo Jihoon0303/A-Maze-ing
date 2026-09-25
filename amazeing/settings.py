@@ -40,6 +40,17 @@ PATH: Color = (255, 214, 90)
 ENTRY: Color = (80, 230, 140)
 EXIT: Color = (255, 80, 90)
 
+# ---------------------------------------------------------------------------
+# Play mode
+# ---------------------------------------------------------------------------
+FLOOR_FALLBACK: Color = (34, 32, 44)     # if the floor texture is missing
+WALL_FALLBACK: Color = (58, 54, 70)      # if the wall texture is missing
+ICHOR_TINT: Color = (120, 255, 90)       # necrotic virus glow
+ICHOR_EDGE: Color = (200, 255, 140)      # freshly infected frontier
+EYE_GLOW: Color = (255, 40, 40)          # ghoul eyes in the dark
+EXIT_GLOW: Color = (120, 255, 170)       # the escape tile
+COORD_BG: Color = (10, 12, 22)           # backing for the (x,y) readout
+
 # Each solver's own colour in race mode (keys match mazegen.solvers).
 SOLVER_COLORS: dict[str, Color] = {
     "bfs": (40, 190, 255),

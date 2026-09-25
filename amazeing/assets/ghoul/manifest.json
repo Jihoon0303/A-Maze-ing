@@ -1,0 +1,9 @@
+{
+  "size": 116,
+  "note": "West mirrored from East. Eye-flicker done in code.",
+  "death": {
+    "south": 7,
+    "east": 7,
+    "north": 7
+  }
+}

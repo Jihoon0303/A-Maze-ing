@@ -10,6 +10,7 @@ from ..app import App, Scene
 from ..maze_view import MazeView
 from ..settings import ACCENT, BG, TEXT_DIM
 from ..ui import Button, draw_text
+from ..play.scene import PlayScene
 from .race import RaceScene
 from .watch import WatchScene
 
@@ -51,7 +52,8 @@ class MenuScene(Scene):
              self._open_watch, True),
             ("Race", "five solvers, one maze, who wins?",
              self._open_race, True),
-            ("Play", "coming soon", self._open_play, False),
+            ("Play", "escape the dark maze before the virus",
+             self._open_play, True),
             ("Quit", "", self.app.pop, True),
         ]
         self.buttons = [
@@ -73,7 +75,7 @@ class MenuScene(Scene):
         self.app.push(RaceScene(self.app))
 
     def _open_play(self) -> None:
-        """Placeholder until play mode exists (the button is disabled)."""
+        self.app.push(PlayScene(self.app))
 
     def _new_background(self) -> None:
         """Start a fresh background maze: random generator and solver."""
